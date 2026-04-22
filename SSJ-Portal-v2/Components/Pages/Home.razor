@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using SSJ_Portal_v2.Models
+@rendermode InteractiveServer
 
 <PageTitle>หน้าหลัก | SSJ Portal</PageTitle>
 
@@ -24,13 +25,12 @@
     <div class="flex justify-center -mt-20 mb-16 relative z-10">
         <div class="relative w-full max-w-xl group">
             <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                <i class="fa-solid fa-magnifying-glass text-blue-500 group-focus-within:scale-110 transition-transform"></i>
+                <i
+                class="fa-solid fa-magnifying-glass text-blue-500 group-focus-within:scale-110 transition-transform"></i>
             </div>
             @* @bind:event="oninput" ช่วยให้การค้นหาเป็นแบบ Real-time ทันทีที่พิมพ์ *@
-            <input type="text" 
-                   @bind="_searchTerm" 
-                   @bind:event="oninput"
-                   placeholder="ค้นหาบริการ..." 
+            <input type="text" value="@_searchTerm" @oninput="(e) => _searchTerm = e.Value?.ToString() ?? string.Empty"
+                   placeholder="ค้นหาบริการ..."
                    class="block w-full pl-14 pr-6 py-4 bg-white border-none rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.1)] focus:ring-4 focus:ring-blue-100 outline-none text-slate-700 text-lg transition-all" />
         </div>
     </div>
@@ -41,10 +41,12 @@
         {
             <div class="group relative transition-all duration-300 hover:-translate-y-2">
                 @* Glassmorphism Card Design *@
-                <div class="bg-white/80 backdrop-blur-md border border-white p-2 rounded-[2rem] shadow-sm group-hover:shadow-xl transition-shadow">
+                <div
+                    class="bg-white/80 backdrop-blur-md border border-white p-2 rounded-[2rem] shadow-sm group-hover:shadow-xl transition-shadow">
                     
                     @* Icon & Gradient Container *@
-                    <div class="bg-gradient-to-br @service.GradientStyle h-36 rounded-3xl flex items-center justify-center relative shadow-inner">
+                    <div
+                        class="bg-gradient-to-br @service.GradientStyle h-36 rounded-3xl flex items-center justify-center relative shadow-inner">
                         <i class="@service.IconClass text-5xl text-white drop-shadow-lg"></i>
                         
                         @* Status Badge Positioned at Top-Right *@
@@ -60,8 +62,8 @@
                             @service.Description
                         </p>
                         
-                        <a href="@service.TargetUrl" 
-                           class="block w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all active:scale-95 shadow-md shadow-blue-100">
+                        <a href="@service.TargetUrl"
+                               class="block w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all active:scale-95 shadow-md shadow-blue-100">
                             เข้าใช้งาน
                         </a>
                     </div>
@@ -94,11 +96,11 @@
     /// <summary>
     /// รายการบริการที่ผ่านการกรองตามคำค้นหา (Filtered List)
     /// </summary>
-    private IEnumerable<ServiceItem> FilteredServices => 
-        (_services ?? new List<ServiceItem>())
-        .Where(s => string.IsNullOrWhiteSpace(_searchTerm) || 
-                    s.Title.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) || 
-                    s.Description.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase));
+    private IEnumerable<ServiceItem> FilteredServices =>
+    (_services ?? new List<ServiceItem>())
+    .Where(s => string.IsNullOrWhiteSpace(_searchTerm) ||
+                s.Title.Contains(_searchTerm, StringComparison.CurrentCultureIgnoreCase) ||
+                s.Description.Contains(_searchTerm, StringComparison.CurrentCultureIgnoreCase));
 
     protected override void OnInitialized()
     {
@@ -112,31 +114,31 @@
     {
         _services = new List<ServiceItem>
         {
-            new() { 
-                Title = "Project Plan", 
-                Description = "จัดการแผนงานและติดตามสถานะโครงการต่างๆ ของหน่วยงาน", 
-                IconClass = "fa-solid fa-diagram-project", 
+            new() {
+                Title = "Project Plan",
+                Description = "จัดการแผนงานและติดตามสถานะโครงการต่างๆ ของหน่วยงาน",
+                IconClass = "fa-solid fa-diagram-project",
                 GradientStyle = "from-amber-400 to-yellow-300",
                 Status = ServiceStatus.Online
             },
-            new() { 
-                Title = "Dental System", 
-                Description = "ระบบรายงานข้อมูลทางทันตกรรมระดับจังหวัด", 
-                IconClass = "fa-solid fa-tooth", 
+            new() {
+                Title = "Dental System",
+                Description = "ระบบรายงานข้อมูลทางทันตกรรมระดับจังหวัด",
+                IconClass = "fa-solid fa-tooth",
                 GradientStyle = "from-emerald-400 to-teal-300",
                 Status = ServiceStatus.Online
             },
-            new() { 
-                Title = "IT Helpdesk", 
-                Description = "แจ้งซ่อมบำรุงคอมพิวเตอร์และระบบเครือข่าย", 
-                IconClass = "fa-solid fa-headset", 
+            new() {
+                Title = "IT Helpdesk",
+                Description = "แจ้งซ่อมบำรุงคอมพิวเตอร์และระบบเครือข่าย",
+                IconClass = "fa-solid fa-headset",
                 GradientStyle = "from-rose-400 to-orange-300",
                 Status = ServiceStatus.Online
             },
-            new() { 
-                Title = "Meeting Room", 
-                Description = "จองห้องประชุมและตรวจสอบตารางการใช้งานประจำวัน", 
-                IconClass = "fa-solid fa-calendar-days", 
+            new() {
+                Title = "Meeting Room",
+                Description = "จองห้องประชุมและตรวจสอบตารางการใช้งานประจำวัน",
+                IconClass = "fa-solid fa-calendar-days",
                 GradientStyle = "from-indigo-500 to-purple-400",
                 Status = ServiceStatus.Maintenance
             }
