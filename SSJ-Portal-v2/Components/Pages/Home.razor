@@ -3,7 +3,7 @@
 
 <PageTitle>หน้าหลัก | SSJ Portal</PageTitle>
 
-@* --- Header Section --- *@
+@* --- ส่วน Banner ต้อนรับ --- *@
 <div class="bg-gradient-to-r from-blue-600 to-cyan-400 py-16 px-4 mb-10 shadow-inner">
     <div class="max-w-7xl mx-auto text-center text-white">
         <h1 class="text-3xl md:text-4xl font-bold mb-4 drop-shadow-md">
@@ -12,20 +12,21 @@
         <p class="text-lg opacity-90 font-medium">
             สำนักงานสาธารณสุขจังหวัดนครศรีธรรมราช
         </p>
-        <p class="text-sm opacity-75 mt-2">
-            เข้าถึงบริการและระบบงานต่าง ๆ ขององค์กรได้ในที่เดียว
+        <p class="text-sm opacity-75 mt-2 italic">
+            "เข้าถึงบริการและระบบงานต่าง ๆ ขององค์กรได้ในที่เดียว"
         </p>
     </div>
 </div>
-        
+
 <div class="max-w-7xl mx-auto px-4 pb-20">
     
-    @* --- Search Bar: Pill-shaped design with Soft Shadow --- *@
+    @* --- ส่วนค้นหาบริการ --- *@
     <div class="flex justify-center -mt-20 mb-16 relative z-10">
         <div class="relative w-full max-w-xl group">
             <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
                 <i class="fa-solid fa-magnifying-glass text-blue-500 group-focus-within:scale-110 transition-transform"></i>
             </div>
+            @* @bind:event="oninput" ช่วยให้การค้นหาเป็นแบบ Real-time ทันทีที่พิมพ์ *@
             <input type="text" 
                    @bind="_searchTerm" 
                    @bind:event="oninput"
@@ -34,37 +35,42 @@
         </div>
     </div>
 
-    @* --- Service Grid --- *@
+    @* --- ส่วนแสดงผลรายการบริการ --- *@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        @if (FilteredServices != null)
+        @foreach (var service in FilteredServices)
         {
-            @foreach (var service in FilteredServices)
-            {
-                <div class="group relative transition-all duration-300 hover:-translate-y-2">
-                    <div class="bg-white/80 backdrop-blur-md border border-white p-2 rounded-[2rem] shadow-sm group-hover:shadow-xl transition-shadow">
-                        <div class="bg-gradient-to-br @service.GradientStyle h-36 rounded-3xl flex items-center justify-center relative shadow-inner">
-                            <i class="@service.IconClass text-5xl text-white drop-shadow-lg"></i>
-                            <div class="absolute top-4 right-4 shadow-lg">
-                                @renderStatusBadge(service.Status)
-                            </div>
-                        </div>
-                        <div class="p-6 text-center">
-                            <h2 class="text-xl font-bold text-slate-800 mb-2">@service.Title</h2>
-                            <p class="text-sm text-slate-400 mb-6 h-10 overflow-hidden line-clamp-2">
-                                @service.Description
-                            </p>
-                            <a href="@service.TargetUrl" 
-                               class="block w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all active:scale-95 shadow-md shadow-blue-100">
-                                เข้าใช้งาน
-                            </a>
+            <div class="group relative transition-all duration-300 hover:-translate-y-2">
+                @* Glassmorphism Card Design *@
+                <div class="bg-white/80 backdrop-blur-md border border-white p-2 rounded-[2rem] shadow-sm group-hover:shadow-xl transition-shadow">
+                    
+                    @* Icon & Gradient Container *@
+                    <div class="bg-gradient-to-br @service.GradientStyle h-36 rounded-3xl flex items-center justify-center relative shadow-inner">
+                        <i class="@service.IconClass text-5xl text-white drop-shadow-lg"></i>
+                        
+                        @* Status Badge Positioned at Top-Right *@
+                        <div class="absolute top-4 right-4 shadow-lg">
+                            @RenderStatusBadge(service.Status)
                         </div>
                     </div>
+
+                    @* Details Section *@
+                    <div class="p-6 text-center">
+                        <h2 class="text-xl font-bold text-slate-800 mb-2">@service.Title</h2>
+                        <p class="text-sm text-slate-400 mb-6 h-10 overflow-hidden line-clamp-2">
+                            @service.Description
+                        </p>
+                        
+                        <a href="@service.TargetUrl" 
+                           class="block w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all active:scale-95 shadow-md shadow-blue-100">
+                            เข้าใช้งาน
+                        </a>
+                    </div>
                 </div>
-            }
+            </div>
         }
     </div>
 
-    @* Empty State: กรณีค้นหาไม่เจอ *@
+    @* --- กรณีไม่พบข้อมูล --- *@
     @if (!FilteredServices.Any())
     {
         <div class="text-center py-20 text-slate-400">
@@ -75,15 +81,24 @@
 </div>
 
 @code {
-    private string _searchTerm = "";
+    /// <summary>
+    /// คำค้นหาที่ผู้ใช้พิมพ์ในช่อง Search
+    /// </summary>
+    private string _searchTerm = string.Empty;
+
+    /// <summary>
+    /// รายการบริการทั้งหมดที่มีในระบบ
+    /// </summary>
     private List<ServiceItem> _services = new();
 
-    // Property สำหรับ Filter ข้อมูลตามคำค้นหา
+    /// <summary>
+    /// รายการบริการที่ผ่านการกรองตามคำค้นหา (Filtered List)
+    /// </summary>
     private IEnumerable<ServiceItem> FilteredServices => 
-        string.IsNullOrWhiteSpace(_searchTerm) 
-        ? _services 
-        : _services.Where(s => s.Title.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) || 
-                               s.Description.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase));
+        (_services ?? new List<ServiceItem>())
+        .Where(s => string.IsNullOrWhiteSpace(_searchTerm) || 
+                    s.Title.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) || 
+                    s.Description.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase));
 
     protected override void OnInitialized()
     {
@@ -91,7 +106,7 @@
     }
 
     /// <summary>
-    /// จำลองการดึงข้อมูลบริการ (ในอนาคตจะเปลี่ยนเป็นการดึงจาก Database)
+    /// จำลองการโหลดข้อมูลบริการ
     /// </summary>
     private void LoadMockData()
     {
@@ -99,7 +114,7 @@
         {
             new() { 
                 Title = "Project Plan", 
-                Description = "ติดตามสถานะโครงการและแผนงานสาธารณสุข", 
+                Description = "จัดการแผนงานและติดตามสถานะโครงการต่างๆ ของหน่วยงาน", 
                 IconClass = "fa-solid fa-diagram-project", 
                 GradientStyle = "from-amber-400 to-yellow-300",
                 Status = ServiceStatus.Online
@@ -129,15 +144,17 @@
     }
 
     /// <summary>
-    /// Render Status Badge ตามสถานะที่กำหนด
+    /// วาด UI ของ Status Badge ตามสถานะที่ระบุ
     /// </summary>
-    private RenderFragment renderStatusBadge(ServiceStatus status) => __builder =>
+    /// <param name="status">สถานะของบริการ</param>
+    private RenderFragment RenderStatusBadge(ServiceStatus status) => __builder =>
     {
+        // กำหนดสีและไอคอนตามสถานะโดยใช้ Switch Expression (C# 8.0+)
         var (color, icon) = status switch
         {
             ServiceStatus.Online => ("bg-green-500", "fa-check"),
             ServiceStatus.Maintenance => ("bg-orange-500", "fa-screwdriver-wrench"),
-            _ => ("bg-gray-400", "fa-question")
+            _ => ("bg-slate-400", "fa-question")
         };
 
         <div class="flex items-center justify-center h-8 w-8 rounded-full border-2 border-white @color shadow-sm">
