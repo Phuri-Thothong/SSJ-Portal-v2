@@ -58,3 +58,52 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* --- Typography Variable System --- */
+:root {
+    --transition-speed: 0.3s;
+}
+
+/* ควบคุมขนาดฐาน (Base Scaling) */
+.font-small  { --base-font-size: 90%; }
+.font-medium { --base-font-size: 100%; }
+.font-large  { --base-font-size: 120%; }
+
+.main-wrapper {
+    font-family: 'Anuphan', sans-serif;
+    font-size: var(--base-font-size, 100%);
+    transition: font-size var(--transition-speed) ease-in-out;
+    
+    /* Typography Scale โดยใช้หน่วย em เพื่อให้ขยายตามตัวแม่ */
+    --fs-h1: 2.5em;
+    --fs-h2: 1.5em;
+    --fs-p: 1em;
+    --fs-small: 0.875em;
+}
+
+/* บังคับใช้ตัวแปรกับ Elements ต่างๆ */
+.main-wrapper h1 { font-size: var(--fs-h1) !important; }
+.main-wrapper h2 { font-size: var(--fs-h2) !important; }
+.main-wrapper p  { font-size: var(--fs-p) !important; }
+.main-wrapper .text-xs { font-size: var(--fs-small) !important; }
+
+/* ปรับระยะห่าง (Spacing) ให้ขยายตามขนาดตัวอักษรด้วยหน่วย em */
+.main-wrapper .service-card {
+    padding: 1.5em;
+}
+
+.main-wrapper input {
+    /* ใช้หน่วย em เพื่อให้ขนาดขยายตาม font-size ของ main-wrapper */
+    font-size: 1em !important; 
+}
+
+/* ปรับขนาด Placeholder ให้ขยายตามไปด้วย */
+.main-wrapper input::placeholder {
+    font-size: 0.9em;
+}
+
+/* หากต้องการให้ช่องค้นหาใหญ่ขึ้นเป็นพิเศษในโหมดตัวใหญ่ (Large) */
+.font-large .main-wrapper input {
+    padding-top: 1.25em;
+    padding-bottom: 1.25em;
+}

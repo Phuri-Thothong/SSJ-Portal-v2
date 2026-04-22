@@ -1,50 +1,42 @@
-@* TopNavbar Component: จัดการส่วนแถบเมนูด้านบน, ระบบปรับขนาดตัวอักษร และโปรไฟล์ผู้ใช้
-*@
+@using SSJ_Portal_v2.Services
+@inject FontSizeService FontSizeService
+@rendermode InteractiveServer
 
 <nav class="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm px-6 py-3">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
-        
-        @* --- ส่วน Branding / Logo --- *@
-        <div class="flex items-center space-x-3 cursor-pointer">
-            <div class="bg-blue-600 p-2 rounded-lg">
-                <i class="fa-solid fa-shield-halved text-white"></i>
+        @* --- ส่วนเครื่องมือ (Tools) --- *@
+        <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+    
+            <span class="hidden sm:inline text-xs text-slate-400 px-3 font-medium">
+                ขนาดตัวอักษร
+            </span>
+
+            <div class="flex space-x-1">
+                <button @onclick='() => FontSizeService.SetSize("small")'
+                        class="px-2 sm:px-3 py-1 rounded-lg text-sm transition-all @(FontSizeService.CurrentSize == "small" ? "bg-white shadow-sm text-blue-600 font-bold" : "text-slate-500")">
+                    ก
+                </button>
+                <button @onclick='() => FontSizeService.SetSize("medium")'
+                        class="px-2 sm:px-3 py-1 rounded-lg text-base transition-all @(FontSizeService.CurrentSize == "medium" ? "bg-white shadow-sm text-blue-600 font-bold" : "text-slate-500")">
+                    ก
+                </button>
+                <button @onclick='() => FontSizeService.SetSize("large")'
+                        class="px-2 sm:px-3 py-1 rounded-lg text-lg transition-all @(FontSizeService.CurrentSize == "large" ? "bg-white shadow-sm text-blue-600 font-bold" : "text-slate-500")">
+                    ก
+                </button>
             </div>
-            <span class="font-bold text-xl text-slate-800 tracking-tight">SSJ PORTAL</span>
         </div>
 
-        @* --- ส่วนเครื่องมือ (Tools) --- *@
-        <div class="flex items-center space-x-8">
-            
-            @* Accessibility: Font Size Adjustment (ก ก ก) *@
-            <div class="hidden md:flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
-                <span class="text-xs text-slate-400 px-3 font-medium">ขนาดตัวอักษร</span>
-                <div class="flex space-x-1">
-                    <button @onclick='() => SetFontSize("small")' 
-                            class="px-3 py-1 rounded-lg text-sm transition-all @(CurrentFontSize == "small" ? "bg-white shadow-sm text-blue-600 font-bold" : "text-slate-500 hover:bg-white/50")">
-                        ก
-                    </button>
-                    <button @onclick='() => SetFontSize("medium")' 
-                            class="px-3 py-1 rounded-lg text-base transition-all @(CurrentFontSize == "medium" ? "bg-white shadow-sm text-blue-600 font-bold" : "text-slate-500 hover:bg-white/50")">
-                        ก
-                    </button>
-                    <button @onclick='() => SetFontSize("large")' 
-                            class="px-3 py-1 rounded-lg text-lg transition-all @(CurrentFontSize == "large" ? "bg-white shadow-sm text-blue-600 font-bold" : "text-slate-500 hover:bg-white/50")">
-                        ก
-                    </button>
-                </div>
+        @* User Profile Section *@
+        <div class="flex items-center space-x-3 border-l pl-8 border-slate-200">
+            <div class="text-right hidden sm:block">
+                <p class="text-sm font-bold text-slate-800 leading-none">ชื่อผู้ใช้งาน</p>
+                <p class="text-[10px] text-blue-600 font-medium uppercase tracking-wider mt-1">กลุ่มงาน</p>
             </div>
-
-            @* User Profile Section *@
-            <div class="flex items-center space-x-3 border-l pl-8 border-slate-200">
-                <div class="text-right hidden sm:block">
-                    <p class="text-sm font-bold text-slate-800 leading-none">ชื่อผู้ใช้งาน</p>
-                    <p class="text-[10px] text-blue-600 font-medium uppercase tracking-wider mt-1">กลุ่มงาน</p>
-                </div>
-                <div class="h-10 w-10 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-full flex items-center justify-center text-white shadow-md ring-2 ring-white cursor-pointer hover:scale-105 transition-transform">
-                    <i class="fa-solid fa-user-tie"></i>
-                </div>
+            <div
+                class="h-10 w-10 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-full flex items-center justify-center text-white shadow-md ring-2 ring-white cursor-pointer hover:scale-105 transition-transform">
+                <i class="fa-solid fa-user-tie"></i>
             </div>
-
         </div>
     </div>
 </nav>

@@ -6,6 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddScoped<SSJ_Portal_v2.Services.FontSizeService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

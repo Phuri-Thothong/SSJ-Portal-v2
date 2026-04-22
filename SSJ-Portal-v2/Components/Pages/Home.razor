@@ -5,7 +5,7 @@
 <PageTitle>หน้าหลัก | SSJ Portal</PageTitle>
 
 @* --- ส่วน Banner ต้อนรับ --- *@
-<div class="bg-gradient-to-r from-blue-600 to-cyan-400 py-16 px-4 mb-10 shadow-inner">
+<div class="bg-gradient-to-r from-blue-600 to-cyan-400 py-16 px-4 shadow-inner">
     <div class="max-w-7xl mx-auto text-center text-white">
         <h1 class="text-3xl md:text-4xl font-bold mb-4 drop-shadow-md">
             ยินดีต้อนรับ เข้าสู่ระบบบริการสารสนเทศภายใน
@@ -22,7 +22,7 @@
 <div class="max-w-7xl mx-auto px-4 pb-20">
     
     @* --- ส่วนค้นหาบริการ --- *@
-    <div class="flex justify-center -mt-20 mb-16 relative z-10">
+    <div class="flex justify-center -translate-y-1/2 mb-16 relative z-10">
         <div class="relative w-full max-w-xl group">
             <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
                 <i
@@ -31,39 +31,41 @@
             @* @bind:event="oninput" ช่วยให้การค้นหาเป็นแบบ Real-time ทันทีที่พิมพ์ *@
             <input type="text" value="@_searchTerm" @oninput="(e) => _searchTerm = e.Value?.ToString() ?? string.Empty"
                    placeholder="ค้นหาบริการ..."
-                   class="block w-full pl-14 pr-6 py-4 bg-white border-none rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.1)] focus:ring-4 focus:ring-blue-100 outline-none text-slate-700 text-lg transition-all" />
+                   class="block w-full pl-14 pr-6 py-3 bg-white border-none rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.1)] focus:ring-4 focus:ring-blue-100 outline-none text-slate-700 text-lg transition-all" />
         </div>
     </div>
 
     @* --- ส่วนแสดงผลรายการบริการ --- *@
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+    @* --- Service Grid --- *@
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch"> @* 1. เพิ่ม items-stretch *@
         @foreach (var service in FilteredServices)
         {
-            <div class="group relative transition-all duration-300 hover:-translate-y-2">
-                @* Glassmorphism Card Design *@
+            <div class="group h-full transition-all duration-300 hover:-translate-y-2"> @* 2. เพิ่ม h-full *@
+            
+                @* 3. เพิ่ม flex flex-col h-full เพื่อให้เนื้อหาข้างในขยายเต็มความสูง *@
                 <div
-                    class="bg-white/80 backdrop-blur-md border border-white p-2 rounded-[2rem] shadow-sm group-hover:shadow-xl transition-shadow">
-                    
-                    @* Icon & Gradient Container *@
+                    class="bg-white/80 backdrop-blur-md border border-white p-2 rounded-[2rem] shadow-sm group-hover:shadow-xl transition-shadow flex flex-col h-full">
+                
+                    @* ส่วน Icon (ความสูงคงที่) *@
                     <div
-                        class="bg-gradient-to-br @service.GradientStyle h-36 rounded-3xl flex items-center justify-center relative shadow-inner">
+                        class="bg-gradient-to-br @service.GradientStyle h-36 rounded-3xl flex-shrink-0 flex items-center justify-center relative shadow-inner">
                         <i class="@service.IconClass text-5xl text-white drop-shadow-lg"></i>
-                        
-                        @* Status Badge Positioned at Top-Right *@
                         <div class="absolute top-4 right-4 shadow-lg">
                             @RenderStatusBadge(service.Status)
                         </div>
                     </div>
 
-                    @* Details Section *@
-                    <div class="p-6 text-center">
+                    @* ส่วนเนื้อหา (ใช้ flex-grow เพื่อดันปุ่มลงไปล่างสุดเสมอ) *@
+                    <div class="p-6 text-center flex flex-col flex-grow">
                         <h2 class="text-xl font-bold text-slate-800 mb-2">@service.Title</h2>
-                        <p class="text-sm text-slate-400 mb-6 h-10 overflow-hidden line-clamp-2">
+                    
+                        @* บังคับให้ Description มีความสูงเท่ากันด้วย line-clamp และ flex-grow *@
+                        <p class="text-sm text-slate-400 mb-6 line-clamp-2 flex-grow">
                             @service.Description
                         </p>
-                        
+                    
                         <a href="@service.TargetUrl"
-                               class="block w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all active:scale-95 shadow-md shadow-blue-100">
+                               class="mt-auto block w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all active:scale-95 shadow-md shadow-blue-100">
                             เข้าใช้งาน
                         </a>
                     </div>

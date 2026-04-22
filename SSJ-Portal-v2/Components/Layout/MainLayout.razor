@@ -1,14 +1,33 @@
 ﻿@inherits LayoutComponentBase
+@using SSJ_Portal_v2.Services
+@inject FontSizeService FontSizeService
+@implements IDisposable
 
-<div class="min-h-screen flex flex-col bg-slate-50">
-    
+@* ใส่ทั้ง Class จาก Service และ Class wrapper หลัก *@
+<div class="min-h-screen flex flex-col bg-slate-50 @FontSizeService.GetFontSizeClass() main-wrapper">
     <TopNavbar />
-
+    
     <main class="flex-grow">
-        @Body
+        <article>
+            @Body
+        </article>
     </main>
 
-    <footer class="py-6 text-center text-slate-400 text-sm border-t border-slate-200 bg-white">
-        &copy; 2026 Office of the Provincial Public Health, NST.
+    <footer class="py-6 text-center text-slate-400 border-t border-slate-200 bg-white">
+        <p class="text-xs">&copy; 2026 สำนักงานสาธารณสุขจังหวัดนครศรีธรรมราช</p>
     </footer>
 </div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        // ติดตามการเปลี่ยนแปลง เมื่อมีการเปลี่ยนขนาด ให้ Refresh หน้าจอ Layout
+        FontSizeService.OnSizeChanged += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        // คืนหน่วยความจำเมื่อ Component ถูกทำลาย
+        FontSizeService.OnSizeChanged -= StateHasChanged;
+    }
+}
