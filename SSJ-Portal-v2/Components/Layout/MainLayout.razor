@@ -1,9 +1,14 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <main>      
-        <article class="content">
-            @Body
-        </article>
+<div class="min-h-screen flex flex-col bg-slate-50">
+    
+    <TopNavbar />
+
+    <main class="flex-grow">
+        @Body
     </main>
+
+    <footer class="py-6 text-center text-slate-400 text-sm border-t border-slate-200 bg-white">
+        &copy; 2026 Office of the Provincial Public Health, NST.
+    </footer>
 </div>
