@@ -3,17 +3,23 @@
 @inject FontSizeService FontSizeService
 @implements IDisposable
 
-@* ใส่ทั้ง Class จาก Service และ Class wrapper หลัก *@
-<div class="min-h-screen flex flex-col bg-slate-50 @FontSizeService.GetFontSizeClass() main-wrapper">
+<div class="min-h-screen flex flex-col @FontSizeService.GetFontSizeClass() main-wrapper relative">
+    <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <div class="absolute inset-0 topographic-bg"></div>
+        <div class="absolute -bottom-[10%] -left-[10%] w-[500px] h-[500px] rounded-full bg-blue-400/60 blur-[100px] animate-blob"></div>
+        <div class="absolute -bottom-[5%] -right-[5%] w-[400px] h-[400px] rounded-full bg-teal-400/40 blur-[80px] animate-blob animation-delay-2000"></div>
+    </div>
+  
     <TopNavbar />
-    
-    <main class="flex-grow">
-        <article>
+
+    <main class="flex-grow relative z-10 bg-transparent">
+        <article class="bg-transparent">
             @Body
         </article>
     </main>
 
-    <footer class="py-6 text-center text-slate-400 border-t border-slate-200 bg-white">
+    <footer
+        class="py-6 text-center text-slate-400 border-t border-slate-200 bg-white/80 backdrop-blur-md relative z-10">
         <p class="text-xs">&copy; 2026 สำนักงานสาธารณสุขจังหวัดนครศรีธรรมราช</p>
     </footer>
 </div>

@@ -3,9 +3,28 @@
 @rendermode InteractiveServer
 
 <PageTitle>หน้าหลัก | SSJ Portal</PageTitle>
+@*
+<div class="glass-card shadow-2xl" 
+     style="position: fixed; top: 250px; left: 50%; transform: translateX(-50%); 
+            width: 320px; height: 200px; z-index: 9999; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem;">
+    
+    <div class="bg-blue-500 w-12 h-12 rounded-full mb-3 flex items-center justify-center">
+        <i class="fa-solid fa-flask text-white text-xl"></i>
+    </div>
+    
+    <div class="text-slate-800 font-bold text-lg">
+        Class .glass-card Test
+    </div>
+    
+    <p class="text-slate-500 text-xs text-center mt-2">
+        ถ้าคุณเห็นพื้นหลังข้างหลัง "เบลอ" <br/> 
+        แสดงว่า CSS ของเราถูกต้อง 100% ครับ!
+    </p>
+</div>*@
 
 @* --- ส่วน Banner ต้อนรับ --- *@
-<div class="bg-gradient-to-r from-blue-600 to-cyan-400 py-16 px-4 shadow-inner">
+<div class="w-full bg-gradient-to-r from-blue-600 to-teal-400 py-16 px-4 rounded-[2.5rem] shadow-xl shadow-inner">
     <div class="max-w-7xl mx-auto text-center text-white">
         <h1 class="text-3xl md:text-4xl font-bold mb-4 drop-shadow-md">
             ยินดีต้อนรับ เข้าสู่ระบบบริการสารสนเทศภายใน
@@ -37,36 +56,32 @@
 
     @* --- ส่วนแสดงผลรายการบริการ --- *@
     @* --- Service Grid --- *@
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch"> @* 1. เพิ่ม items-stretch *@
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch">
         @foreach (var service in FilteredServices)
         {
-            <div class="group h-full transition-all duration-300 hover:-translate-y-2"> @* 2. เพิ่ม h-full *@
-            
-                @* 3. เพิ่ม flex flex-col h-full เพื่อให้เนื้อหาข้างในขยายเต็มความสูง *@
-                <div
-                    class="bg-white/80 backdrop-blur-md border border-white p-2 rounded-[2rem] shadow-sm group-hover:shadow-xl transition-shadow flex flex-col h-full">
-                
-                    @* ส่วน Icon (ความสูงคงที่) *@
+            <div class="group h-full transition-all duration-300 hover:-translate-y-2">
+                <div class="glass-card p-6 flex flex-col h-full cursor-pointer">
                     <div
                         class="bg-gradient-to-br @service.GradientStyle h-36 rounded-3xl flex-shrink-0 flex items-center justify-center relative shadow-inner">
                         <i class="@service.IconClass text-5xl text-white drop-shadow-lg"></i>
-                        <div class="absolute top-4 right-4 shadow-lg">
+                        <div class="absolute top-4 right-4">
                             @RenderStatusBadge(service.Status)
                         </div>
                     </div>
-
-                    @* ส่วนเนื้อหา (ใช้ flex-grow เพื่อดันปุ่มลงไปล่างสุดเสมอ) *@
                     <div class="p-6 text-center flex flex-col flex-grow">
                         <h2 class="text-xl font-bold text-slate-800 mb-2">@service.Title</h2>
-                    
-                        @* บังคับให้ Description มีความสูงเท่ากันด้วย line-clamp และ flex-grow *@
                         <p class="text-sm text-slate-400 mb-6 line-clamp-2 flex-grow">
                             @service.Description
                         </p>
-                    
                         <a href="@service.TargetUrl"
-                               class="mt-auto block w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all active:scale-95 shadow-md shadow-blue-100">
-                            เข้าใช้งาน
+                               class="mt-auto w-full py-3 bg-gradient-to-r from-blue-600 to-teal-400 hover:brightness-110 hover:shadow-lg hover:shadow-blue-500/40 text-white font-bold rounded-xl flex items-center justify-center gap-3 transition-all active:scale-95 shadow-md shadow-blue-500/20 group">
+    
+                            @* ข้อความปุ่ม *@
+                            <span>เข้าใช้งาน</span>
+    
+                            @* ไอคอนลูกศรชี้ขวา (Arrow Right) ตามตัวอย่าง *@
+                            @* transition-transform และ group-hover จะทำให้ลูกศรขยับนิดหน่อยตอนเอาเมาส์ชี้ *@
+                            <i class="fa-solid fa-arrow-right text-lg transition-transform group-hover:translate-x-1"></i>
                         </a>
                     </div>
                 </div>
@@ -161,7 +176,7 @@
             _ => ("bg-slate-400", "fa-question")
         };
 
-        <div class="flex items-center justify-center h-8 w-8 rounded-full border-2 border-white @color shadow-sm">
+        <div class="flex items-center justify-center h-8 w-8 rounded-full border-2 border-white @color shadow-md">
             <i class="fa-solid @icon text-[12px] text-white"></i>
         </div>
     };
