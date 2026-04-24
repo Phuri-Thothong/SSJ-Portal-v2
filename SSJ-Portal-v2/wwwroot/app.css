@@ -119,7 +119,7 @@ h1:focus {
     -webkit-mask-position: center;
     mask-position: center;
     background-attachment: fixed;
-    opacity: 0.4;
+    opacity: 0.1;
     width: 100%;
     height: 100%;
 }
