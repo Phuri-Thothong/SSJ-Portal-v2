@@ -45,16 +45,41 @@
 <div class="max-w-7xl mx-auto px-4 pb-20">
     
     @* --- ส่วนค้นหาบริการ --- *@
-    <div class="flex justify-center -translate-y-1/2 mb-16 relative z-10">
+    <div class="flex justify-center -translate-y-1/2 mb-15 relative z-10 px-4">
         <div class="relative w-full max-w-xl group">
-            <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                <i
-                class="fa-solid fa-magnifying-glass text-blue-500 group-focus-within:scale-110 transition-transform"></i>
+            @* แสงเรืองรองรอบๆ เวลาจิ้มที่ช่องค้นหา *@
+            <div
+                class="absolute -inset-1 bg-gradient-to-r from-blue-400 to-teal-400 rounded-full blur opacity-25 group-focus-within:opacity-50 transition duration-1000 group-focus-within:duration-200">
             </div>
-            @* @bind:event="oninput" ช่วยให้การค้นหาเป็นแบบ Real-time ทันทีที่พิมพ์ *@
-            <input type="text" value="@_searchTerm" @oninput="(e) => _searchTerm = e.Value?.ToString() ?? string.Empty"
-                   placeholder="ค้นหาบริการ..."
-                   class="block w-full pl-14 pr-6 py-3 bg-white border-none rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.1)] focus:ring-4 focus:ring-blue-100 outline-none text-slate-700 text-lg transition-all" />
+            <div class="relative">
+                @* ไอคอนแว่นขยาย *@
+                <div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none z-20">
+                    <i
+                    class="fa-solid fa-magnifying-glass text-blue-500/80 group-focus-within:text-blue-600 group-focus-within:scale-110 transition-all"></i>
+                </div>
+
+                @* ตัว Input *@
+                <input type="text" value="@_searchTerm"
+                       @oninput="(e) => _searchTerm = e.Value?.ToString() ?? string.Empty"
+                       placeholder="ค้นหาบริการที่ต้องการ..." class="block w-full pl-16 pr-8 py-3 
+                bg-white/40 backdrop-blur-xl
+                border border-white/60
+                rounded-full 
+                shadow-[0_8px_32px_0_rgba(31,38,135,0.15)]
+                text-slate-800 text-lg placeholder:text-slate-800
+                outline-none focus:ring-0
+                focus:bg-white/60 focus:border-white/80
+                transition-all duration-300" />
+            
+                @* ปุ่มล้างคำค้นหา จะขึ้นมาเมื่อมีตัวหนังสือ *@
+                @if (!string.IsNullOrEmpty(_searchTerm))
+                {
+                    <button @onclick='() => _searchTerm = ""'
+                            class="absolute inset-y-0 right-4 flex items-center px-2 text-slate-400 hover:text-rose-500 transition-colors">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    </button>
+                }
+            </div>
         </div>
     </div>
 
@@ -113,7 +138,8 @@
             </div>
         }
         @* --- [ADMIN UI] การ์ดสำหรับเพิ่มบริการใหม่ --- *@
-        @if (AdminService.IsManagementMode)
+        @* แสดงปุ่มเพิ่มบริการแบบ Card "เฉพาะ" เมื่อมีรายการผลลัพธ์และอยู่ในโหมดแอดมิน *@
+        @if (AdminService.IsManagementMode && FilteredServices.Any())
         {
             <div @onclick="OpenAddModal"
                  class="glass-card h-full min-h-[400px] border-2 border-dashed border-slate-300 flex items-center justify-center cursor-pointer hover:bg-white/40 transition-all group animate-in fade-in slide-in-from-bottom-4">
@@ -132,9 +158,48 @@
     @* --- กรณีไม่พบข้อมูล --- *@
     @if (!FilteredServices.Any())
     {
-        <div class="text-center py-20 text-slate-400">
-            <i class="fa-solid fa-box-open text-5xl mb-4 opacity-20"></i>
-            <p class="text-lg">ไม่พบบริการที่คุณกำลังค้นหา</p>
+        <div class="flex justify-center py-2 animate-in fade-in zoom-in duration-500 px-4">
+            <div class="glass-card w-full max-w-md p-10 flex flex-col items-center text-center 
+                border border-white/60 shadow-2xl relative overflow-hidden"
+                 style="background: rgba(255, 255, 255, 0.3); backdrop-filter: blur(5px);">
+                @* ตกแต่งพื้นหลังการ์ดด้วยแสงจางๆ *@
+                <div class="absolute -top-10 -left-10 w-32 h-32 bg-blue-400/10 blur-3xl rounded-full"></div>
+                <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-teal-400/10 blur-3xl rounded-full"></div>
+                @* ส่วนไอคอนเลเยอร์ *@
+                <div class="relative mb-8">
+                    <div class="relative flex items-center justify-center w-28 h-28 rounded-3xl 
+                        bg-white/40 border border-white/60 shadow-inner group">
+                        <i
+                        class="fa-solid fa-magnifying-glass text-5xl text-blue-500/30 group-hover:scale-110 transition-transform duration-500"></i>
+                        @* ไอคอน X สีแดงที่มุม *@
+                        <div
+                            class="absolute -bottom-2 -right-2 w-10 h-10 bg-rose-500/90 text-white 
+                            rounded-full flex items-center justify-center text-sm border-4 border-white/80 shadow-lg">
+                            <i class="fa-solid fa-xmark"></i>
+                        </div>
+                    </div>
+                </div>
+
+                @* ข้อความรายละเอียด *@
+                <div class="relative z-10">
+                    <h3 class="text-2xl font-black text-slate-800 mb-3 tracking-tight">ไม่พบผลลัพธ์</h3>
+                    <p class="text-slate-500 text-sm leading-relaxed mb-8">
+                        เราไม่พบบริการที่ตรงกับคำว่า <br />
+                        <span
+                            class="inline-block px-3 py-1 mt-2 rounded-lg bg-blue-50 text-blue-600 font-bold border border-blue-100">
+                            "@_searchTerm"
+                        </span>
+                    </p>
+
+                    @* ปุ่ม Action *@
+                    <button @onclick='() => _searchTerm = ""'
+                            class="group flex items-center gap-2 px-8 py-3 bg-slate-900 text-white text-sm font-bold rounded-2xl
+                        hover:bg-blue-600 hover:shadow-xl hover:shadow-blue-500/30 transition-all active:scale-95">
+                        <i class="fa-solid fa-rotate-left group-hover:rotate-180 transition-transform duration-500"></i>
+                        <span>ล้างการค้นหาทั้งหมด</span>
+                    </button>
+                </div>
+            </div>
         </div>
     }
 </div>
@@ -239,8 +304,8 @@
                         <button type="button" @onclick="() => editingService.Status = ServiceStatus.Online"
                                 class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold transition-all
                             @(editingService.Status == ServiceStatus.Online
-                                                                                                                                                                                  ? "bg-white text-emerald-600 shadow-sm ring-1 ring-emerald-500/20"
-                                                                                                                                                                                  : "text-slate-400 hover:text-slate-600")">
+                                                                                                                                                                                                                                                                                  ? "bg-white text-emerald-600 shadow-sm ring-1 ring-emerald-500/20"
+                                                                                                                                                                                                                                                                                  : "text-slate-400 hover:text-slate-600")">
                             <i class="fa-solid fa-circle-check text-[10px]"></i>
                             <span class="text-sm">Online</span>
                         </button>
@@ -249,8 +314,8 @@
                         <button type="button" @onclick="() => editingService.Status = ServiceStatus.Maintenance"
                                 class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold transition-all
                             @(editingService.Status == ServiceStatus.Maintenance
-                                                                                                                                                                                       ? "bg-white text-rose-500 shadow-sm ring-1 ring-rose-500/20"
-                                                                                                                                                                                       : "text-slate-400 hover:text-slate-600")">
+                                                                                                                                                                                                                                                                                       ? "bg-white text-rose-500 shadow-sm ring-1 ring-rose-500/20"
+                                                                                                                                                                                                                                                                                       : "text-slate-400 hover:text-slate-600")">
                             <i class="fa-solid fa-screwdriver-wrench text-[10px]"></i>
                             <span class="text-sm">Maintenance</span>
                         </button>
@@ -448,7 +513,7 @@
         "fa-solid fa-laptop-medical", "fa-solid fa-hospital", "fa-solid fa-calendar-check",
         "fa-solid fa-briefcase-medical", "fa-solid fa-notes-medical", "fa-solid fa-user-doctor",
         "fa-solid fa-heart-pulse", "fa-solid fa-syringe", "fa-solid fa-tooth",
-        "fa-solid fa-microscope", "fa-solid fa-ambulance", "fa-solid fa-shield-halved", 
+        "fa-solid fa-microscope", "fa-solid fa-ambulance", "fa-solid fa-shield-halved",
         "fa-solid fa-chart-line", "fa-solid fa-database", "fa-solid fa-folder-open",
         "fa-solid fa-print", "fa-solid fa-comments", "fa-solid fa-network-wired",
         "fa-solid fa-brain", "fa-solid fa-graduation-cap", "fa-solid fa-money-bill-transfer",
