@@ -7,6 +7,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddScoped<SSJ_Portal_v2.Services.FontSizeService>();
+builder.Services.AddScoped<SSJ_Portal_v2.Services.AdminService>();
 
 var app = builder.Build();
 

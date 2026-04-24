@@ -18,7 +18,7 @@ public class ServiceItem
     /// <summary>
     /// Class ของไอคอนจาก Font Awesome (เช่น fa-solid fa-user)
     /// </summary>
-    public string IconClass { get; set; } = "fa-solid fa-circle-info";
+    public string IconClass { get; set; } = "fa-solid fa-star";
 
     /// <summary>
     /// ลิงก์ปลายทางเมื่อผู้ใช้กดปุ่มเข้าใช้งาน
@@ -34,6 +34,11 @@ public class ServiceItem
     /// สถานะปัจจุบันของบริการ
     /// </summary>
     public ServiceStatus Status { get; set; } = ServiceStatus.Online;
+
+    /// <summary>
+    /// กำหนดให้เปิดลิงก์ในแท็บใหม่หรือไม่
+    /// </summary>
+    public bool OpenInNewTab { get; set; } = true; // ตั้งค่าเริ่มต้นเป็น true (เปิดแท็บใหม่)
 }
 
 /// <summary>

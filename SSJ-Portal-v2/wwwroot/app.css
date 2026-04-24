@@ -203,3 +203,12 @@ h1:focus {
 .blur-3xl {
     filter: blur(64px);
 }
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}

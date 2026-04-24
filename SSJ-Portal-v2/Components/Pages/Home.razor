@@ -1,5 +1,9 @@
 ﻿@page "/"
 @using SSJ_Portal_v2.Models
+@using SSJ_Portal_v2.Services
+@inject AdminService AdminService
+@inject IJSRuntime JSRuntime
+@implements IDisposable
 @rendermode InteractiveServer
 
 <PageTitle>หน้าหลัก | SSJ Portal</PageTitle>
@@ -59,7 +63,26 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch">
         @foreach (var service in FilteredServices)
         {
-            <div class="group h-full transition-all duration-300 hover:-translate-y-2">
+            <div class="relative group h-full transition-all duration-300 hover:-translate-y-2">
+                @* --- [ADMIN UI] ปุ่มแก้ไขและลบ --- *@
+                @if (AdminService.IsManagementMode)
+                {
+                    <div class="absolute -top-3 -right-3 flex gap-2 z-40 animate-in fade-in zoom-in duration-300">
+                        @* ปุ่มแก้ไข *@
+                        <button @onclick="() => OpenEditModal(service)"
+                                class="w-10 h-10 bg-amber-400 hover:bg-amber-500 text-white rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110 active:scale-90"
+                                title="แก้ไขบริการ">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+
+                        @* ปุ่มลบ *@
+                        <button @onclick="() => HandleDelete(service)"
+                                class="w-10 h-10 bg-rose-500 hover:bg-rose-600 text-white rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110 active:scale-90"
+                                title="ลบบริการ">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                }
                 <div class="glass-card p-6 flex flex-col h-full cursor-pointer">
                     <div
                         class="bg-gradient-to-br @service.GradientStyle h-36 rounded-3xl flex-shrink-0 flex items-center justify-center relative shadow-inner">
@@ -70,10 +93,12 @@
                     </div>
                     <div class="p-6 text-center flex flex-col flex-grow">
                         <h2 class="text-xl font-bold text-slate-800 mb-2">@service.Title</h2>
-                        <p class="text-sm text-slate-400 mb-6 line-clamp-2 flex-grow">
+                        <p class="text-sm text-slate-500 mb-6 flex-grow 
+                            line-clamp-2 break-words overflow-hidden">
                             @service.Description
                         </p>
-                        <a href="@service.TargetUrl"
+                        <a href="@service.TargetUrl" target="@(service.OpenInNewTab ? "_blank" : "_self")"
+                               rel="@(service.OpenInNewTab ? "noopener noreferrer" : "")"
                                class="mt-auto w-full py-3 bg-gradient-to-r from-blue-600 to-teal-400 hover:brightness-110 hover:shadow-lg hover:shadow-blue-500/40 text-white font-bold rounded-xl flex items-center justify-center gap-3 transition-all active:scale-95 shadow-md shadow-blue-500/20 group">
     
                             @* ข้อความปุ่ม *@
@@ -84,6 +109,21 @@
                             <i class="fa-solid fa-arrow-right text-lg transition-transform group-hover:translate-x-1"></i>
                         </a>
                     </div>
+                </div>
+            </div>
+        }
+        @* --- [ADMIN UI] การ์ดสำหรับเพิ่มบริการใหม่ --- *@
+        @if (AdminService.IsManagementMode)
+        {
+            <div @onclick="OpenAddModal"
+                 class="glass-card h-full min-h-[400px] border-2 border-dashed border-slate-300 flex items-center justify-center cursor-pointer hover:bg-white/40 transition-all group animate-in fade-in slide-in-from-bottom-4">
+        
+                <div class="text-center">
+                    <div
+                        class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-50 transition-colors">
+                        <i class="fa-solid fa-plus text-2xl text-slate-400 group-hover:text-blue-500"></i>
+                    </div>
+                    <p class="font-bold text-slate-500 group-hover:text-blue-600">เพิ่มบริการใหม่</p>
                 </div>
             </div>
         }
@@ -98,6 +138,205 @@
         </div>
     }
 </div>
+
+@if (isModalOpen && editingService != null)
+{
+    <div class="fixed inset-0 z-[100] overflow-y-auto p-4 sm:p-8 flex justify-center items-start">
+        @* Backdrop (พื้นหลังเบลอ) *@
+        <div class="fixed inset-0 bg-slate-900/30 backdrop-blur-sm" @onclick="CloseModal"></div>
+
+        @* Modal Card (ตัวกระจก) *@
+        <div class="glass-card w-full max-w-lg relative z-10 p-8 shadow-2xl animate-in zoom-in-95 duration-300 
+            my-auto
+            max-h-[90vh]
+            flex flex-col"
+             style="background: rgba(255, 255, 255, 0.7) !important; backdrop-filter: blur(30px) !important;">
+            @* ส่วนหัว Modal (Header) *@
+            <div class="flex justify-between items-center mb-6 shrink-0">
+                <h3 class="text-2xl font-bold text-slate-800">@modalTitle</h3>
+                <button @onclick="CloseModal" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            @* ส่วนเนื้อหาที่เลื่อนได้ (Scrollable Content) *@
+            <div class="overflow-y-auto pr-2 custom-scrollbar space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">ชื่อบริการ</label>
+                    <input type="text" @bind="editingService.Title"
+                           class="w-full px-4 py-2 rounded-xl border border-white/50 bg-white/50 focus:ring-2 focus:ring-blue-400 outline-none transition-all" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">คำอธิบาย</label>
+                    <textarea @bind="editingService.Description" rows="3"
+                              class="w-full px-4 py-2 rounded-xl border border-white/50 bg-white/50 focus:ring-2 focus:ring-blue-400 outline-none transition-all"></textarea>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-slate-600 mb-1">เลือกไอคอน</label>
+            
+                    @* แสดง Preview ไอคอนที่เลือก *@
+                    <div class="flex items-center gap-4 mb-3 p-3 bg-white/40 rounded-xl border border-white/50">
+                        <div
+                            class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center text-white text-xl shadow-lg shadow-blue-500/20">
+                            <i class="@editingService.IconClass"></i>
+                        </div>
+                        <div class="text-xs font-mono text-slate-500">@editingService.IconClass</div>
+                    </div>
+
+                    @* ตารางไอคอน (Grid) *@
+                    <div
+                        class="grid grid-cols-6 gap-2 max-h-40 overflow-y-auto p-2 bg-white/30 rounded-xl border border-white/20 custom-scrollbar">
+                        @foreach (var icon in AvailableIcons)
+                        {
+                            <button @onclick="() => editingService.IconClass = icon" type="button"
+                                    class="h-10 flex items-center justify-center rounded-lg border transition-all 
+                                @(editingService.IconClass == icon ? "border-blue-500 bg-blue-100/50 text-blue-600 shadow-sm" : "border-transparent hover:bg-white/50 text-slate-400")">
+                                <i class="@icon"></i>
+                            </button>
+                        }
+                    </div>
+                    <div class="mt-4">
+                        <label class=" text-sm font-medium text-slate-600 mb-1">ค้นหาหรือระบุชื่อไอคอนเอง</label>
+                        <div class="flex gap-2">
+                            @* ช่องพิมพ์ชื่อคลาสเอง *@
+                            <input type="text" @bind="editingService.IconClass" @bind:event="oninput"
+                                   placeholder="เช่น fa-solid fa-microchip"
+                                   class="flex-grow px-4 py-2 rounded-xl border border-white/50 bg-white/50 focus:ring-2 focus:ring-blue-400 outline-none text-sm font-mono" />
+        
+                            @* ปุ่มเปิดวาร์ปไปหน้าค้นหาไอคอน *@
+                            <a href="https://fontawesome.com/search?o=r&m=free" target="_blank"
+                                   class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-all flex items-center shadow-sm"
+                                   title="ไปหาไอคอนที่ FontAwesome">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                @* --- ส่วนกรอกลิงก์เข้าใช้งาน --- *@
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-slate-600 mb-1">ลิงก์เข้าใช้งาน</label>
+                    <input type="text" @bind="editingService.TargetUrl" placeholder="ใส่ Path เช่น /meeting หรือ URL เต็ม"
+                           class="w-full px-4 py-2 rounded-xl border border-white/50 bg-white/50 focus:ring-2 focus:ring-blue-400 outline-none transition-all" />
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-slate-600 mb-1">การตอบสนองของลิงก์</label>
+                    <label class="w-full px-4 py-3 rounded-xl border border-white/50 bg-white/50 
+                        flex items-center gap-3 cursor-pointer hover:bg-white/60 transition-all group">
+                        <input type="checkbox" @bind="editingService.OpenInNewTab" class="w-5 h-5 rounded border-slate-300 text-blue-600 
+                        focus:ring-blue-500 focus:ring-offset-0 cursor-pointer" />
+                        <div class="flex flex-col">
+                            <span class="text-sm font-semibold text-slate-700">เปิดในแท็บใหม่</span>
+                            <span class="text-xs text-slate-400">เปิดบริการนี้ในหน้าต่างใหม่ของเบราว์เซอร์</span>
+                        </div>
+                    </label>
+                </div>
+                @* --- ส่วนเลือกสถานะบริการ (Status Selection) --- *@
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-slate-600 mb-1">สถานะการให้บริการ</label>
+                    <div class="flex gap-3 p-1.5 bg-slate-100/50 rounded-2xl border border-white/40">
+        
+                        @* ปุ่มสถานะ Online *@
+                        <button type="button" @onclick="() => editingService.Status = ServiceStatus.Online"
+                                class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold transition-all
+                            @(editingService.Status == ServiceStatus.Online
+                                                                                                                                                                                  ? "bg-white text-emerald-600 shadow-sm ring-1 ring-emerald-500/20"
+                                                                                                                                                                                  : "text-slate-400 hover:text-slate-600")">
+                            <i class="fa-solid fa-circle-check text-[10px]"></i>
+                            <span class="text-sm">Online</span>
+                        </button>
+
+                        @* ปุ่มสถานะ Maintenance *@
+                        <button type="button" @onclick="() => editingService.Status = ServiceStatus.Maintenance"
+                                class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold transition-all
+                            @(editingService.Status == ServiceStatus.Maintenance
+                                                                                                                                                                                       ? "bg-white text-rose-500 shadow-sm ring-1 ring-rose-500/20"
+                                                                                                                                                                                       : "text-slate-400 hover:text-slate-600")">
+                            <i class="fa-solid fa-screwdriver-wrench text-[10px]"></i>
+                            <span class="text-sm">Maintenance</span>
+                        </button>
+                    </div>
+                </div>
+
+                @* --- ส่วนเลือกโทนสีการ์ด --- *@
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-slate-600 mb-3">เลือกโทนสีการ์ด</label>
+                    <div class="grid grid-cols-6 gap-3"> @* ปรับเป็น 6 col เพื่อรองรับปุ่มเพิ่ม *@
+                        @foreach (var style in AvailableGradients)
+                        {
+                            <button @onclick="() => { editingService.GradientStyle = style; isShowCustomPicker = false; }"
+                                    type="button"
+                                    class="h-10 rounded-lg border-2 transition-all bg-gradient-to-br @style 
+                                @(editingService.GradientStyle == style && !isShowCustomPicker ? "border-slate-600 scale-110 shadow-md" : "border-transparent hover:scale-105")">
+                            </button>
+                        }
+
+                        @* --- ปุ่มสำหรับเปิด Custom Picker --- *@
+                        <button @onclick="ToggleCustomPicker" type="button"
+                                class="h-10 rounded-lg border-2 flex items-center justify-center transition-all
+                            @(isShowCustomPicker ? "border-blue-500 bg-blue-50 text-blue-600 scale-110" : "border-dashed border-slate-300 text-slate-400 hover:border-blue-400 hover:text-blue-500")">
+                            <i class="fa-solid fa-palette"></i>
+                        </button>
+                    </div>
+                </div>
+
+                @* --- ส่วน Custom Picker ที่จะขยายออกมา (Expanded UI) --- *@
+                @if (isShowCustomPicker)
+                {
+                    <div
+                        class="mt-4 p-5 rounded-2xl bg-white/40 border border-blue-100 shadow-inner animate-in slide-in-from-top-2 duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Custom Gradient</span>
+                            <div class="w-16 h-5 rounded-full border border-white shadow-sm"
+                                 style="background: linear-gradient(to right, @customFrom, @customTo)"></div>
+                        </div>
+
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1">
+                                <input type="color" @bind="customFrom" @bind:event="oninput"
+                                       class="w-full h-10 rounded-lg cursor-pointer bg-transparent" title="สีเริ่มต้น" />
+                            </div>
+            
+                            <i class="fa-solid fa-right-long text-slate-300"></i>
+
+                            <div class="flex-1">
+                                <input type="color" @bind="customTo" @bind:event="oninput"
+                                       class="w-full h-10 rounded-lg cursor-pointer bg-transparent" title="สีปลายทาง" />
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="flex gap-3 mt-8 shrink-0">
+                <button @onclick="CloseModal"
+                        class="flex-1 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-100 transition-all">ยกเลิก</button>
+                <button @onclick="HandleSave"
+                        class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all">บันทึกข้อมูล</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (showToast)
+{
+    <div class="fixed top-24 left-1/2 -translate-x-1/2 z-[3000] animate-in fade-in slide-in-from-top-4 duration-500">
+        <div class="glass-card px-8 py-4 shadow-2xl flex items-center gap-4 border border-white/60"
+             style="background: rgba(255, 255, 255, 0.4) !important; backdrop-filter: blur(20px) !important;">
+            <div
+                class="w-10 h-10 bg-emerald-500/20 text-emerald-600 rounded-full flex items-center justify-center border border-emerald-500/30">
+                <i class="fa-solid fa-check text-lg"></i>
+            </div>
+            <div class="flex flex-col">
+                <span class="text-sm font-bold text-slate-800">ดำเนินการสำเร็จ</span>
+                <span class="text-xs text-slate-600">@toastMessage</span>
+            </div>
+            @* ปุ่มปิดเล็กๆ *@
+            <button @onclick="() => showToast = false" class="ml-4 text-slate-400 hover:text-slate-600 transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+}
 
 @code {
     /// <summary>
@@ -119,9 +358,29 @@
                 s.Title.Contains(_searchTerm, StringComparison.CurrentCultureIgnoreCase) ||
                 s.Description.Contains(_searchTerm, StringComparison.CurrentCultureIgnoreCase));
 
+    private string modalTitle = "";
+    // ตัวแปรเช็กว่าเป็นโหมดเพิ่มหรือแก้ไข
+    private bool isModalOpen = false;
+    private bool isEditMode = false;
+    private bool isShowCustomPicker = false;
+    private bool showToast = false; // ควบคุมการแสดงผลแจ้งเตือน
+    private ServiceItem? editingService; // @bind ใน Modal (ตัวก๊อปปี้)
+    private ServiceItem? originalService; // ตัวจริงที่อยู่บนหน้าจอ (เอาไว้รับค่าตอนกด Save)
+    private string? toastMessage; // เก็บข้อความแจ้งเตือน
+    private string customFrom = "#3b82f6"; // ค่าเริ่มต้น (น้ำเงิน)
+    private string customTo = "#2dd4bf"; // ค่าเริ่มต้น (เขียว)
+
     protected override void OnInitialized()
     {
         LoadMockData();
+        // สมัครรับข้อมูลเมื่อโหมดแอดมินเปลี่ยนไป
+        AdminService.OnModeChanged += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        // ยกเลิกการสมัครเมื่อเลิกใช้งานหน้านี้
+        AdminService.OnModeChanged -= StateHasChanged;
     }
 
     /// <summary>
@@ -180,4 +439,131 @@
             <i class="fa-solid @icon text-[12px] text-white"></i>
         </div>
     };
+
+    // รายชื่อไอคอนที่คุณอนุญาตให้แอดมินเลือก
+    private List<string> AvailableIcons = new()
+    {
+        "fa-solid fa-house", "fa-solid fa-gear", "fa-solid fa-user",
+        "fa-solid fa-file-medical", "fa-solid fa-stethoscope", "fa-solid fa-pills",
+        "fa-solid fa-laptop-medical", "fa-solid fa-hospital", "fa-solid fa-calendar-check",
+        "fa-solid fa-briefcase-medical", "fa-solid fa-notes-medical", "fa-solid fa-user-doctor",
+        "fa-solid fa-heart-pulse", "fa-solid fa-syringe", "fa-solid fa-tooth",
+        "fa-solid fa-microscope", "fa-solid fa-ambulance", "fa-solid fa-shield-halved", 
+        "fa-solid fa-chart-line", "fa-solid fa-database", "fa-solid fa-folder-open",
+        "fa-solid fa-print", "fa-solid fa-comments", "fa-solid fa-network-wired",
+        "fa-solid fa-brain", "fa-solid fa-graduation-cap", "fa-solid fa-money-bill-transfer",
+        "fa-solid fa-map-location-dot", "fa-solid fa-boxes-stacked", "fa-solid fa-utensils"
+    };
+
+    // กำหนดรายการสีที่ต้องการให้เลือก (เอาเฉพาะส่วน from-... to-...)
+    private List<string> AvailableGradients = new()
+    {
+        "from-blue-600 to-teal-400",
+        "from-emerald-500 to-teal-300",
+        "from-amber-400 to-orange-500",
+        "from-rose-500 to-pink-500",
+        "from-violet-600 to-purple-400",
+        "from-indigo-500 to-blue-500",
+        "from-slate-600 to-slate-400",
+        "from-cyan-500 to-blue-500",
+        "from-orange-500 to-red-600",
+        "from-fuchsia-600 to-purple-600",
+        "from-lime-400 to-emerald-500"
+    };
+
+    // ฟังก์ชันเปิด Modal สำหรับเพิ่มใหม่
+    private void OpenAddModal()
+    {
+        isEditMode = false; // บอกระบบว่านี่คือการ "เพิ่มใหม่"
+        isShowCustomPicker = false;
+        editingService = new ServiceItem
+        {
+            Title = "",
+            Description = "",
+            IconClass = "fa-solid fa-star", // ค่าเริ่มต้น
+            TargetUrl = "",
+            GradientStyle = "from-gray-400 to-gray-300"
+        };
+        modalTitle = "เพิ่มบริการใหม่";
+        isModalOpen = true;
+    }
+
+    // ฟังก์ชันเปิด Modal สำหรับแก้ไข
+    private void OpenEditModal(ServiceItem service)
+    {
+        isEditMode = true; // บอกระบบว่านี่คือการ "แก้ไข"
+        isShowCustomPicker = false;
+        originalService = service;
+        editingService = new ServiceItem
+        {
+            Title = service.Title,
+            Description = service.Description,
+            IconClass = service.IconClass,
+            TargetUrl = service.TargetUrl,
+            GradientStyle = service.GradientStyle,
+            Status = service.Status
+        };
+        modalTitle = "แก้ไขข้อมูลบริการ";
+        isModalOpen = true;
+    }
+
+    private void CloseModal() => isModalOpen = false;
+
+    private void HandleSave()
+    {
+        if (editingService == null) return;
+
+        // ถ้าแอดมินเปิดหน้าต่าง Custom Picker ทิ้งไว้ ให้ดึงสีจาก Color Picker มาใช้ทันที
+        if (isShowCustomPicker)
+        {
+            editingService.GradientStyle = $"from-[{customFrom}] to-[{customTo}]";
+        }
+
+        if (isEditMode && originalService != null)
+        {
+            // เอาข้อมูลจาก "ตัวก๊อปปี้" (editingService) ไปทับ "ตัวจริง" (originalService)
+            originalService.Title = editingService.Title;
+            originalService.Description = editingService.Description;
+            originalService.IconClass = editingService.IconClass;
+            originalService.TargetUrl = editingService.TargetUrl;
+            originalService.GradientStyle = editingService.GradientStyle;
+            originalService.Status = editingService.Status;
+        }
+        else
+        {
+            // นำ "ตัวก๊อปปี้" ที่เรากรอกข้อมูลไว้ เพิ่มเข้าไปใน List หลัก
+            _services.Add(editingService);
+        }
+        
+        // หมายเหตุ: ถ้าเป็นโหมดแก้ไข (isEditMode = true)
+        // ข้อมูลใน List จะถูกอัปเดตอัตโนมัติผ่าน @bind อยู่แล้ว
+        isModalOpen = false; // ปิดหน้าต่าง
+        // สั่งให้ Blazor วาดหน้าจอใหม่เพื่อให้เห็นข้อมูลที่เปลี่ยนไป
+        StateHasChanged();
+    }
+
+    private async Task HandleDelete(ServiceItem service)
+    {
+        // แสดงหน้าต่างยืนยันเพื่อป้องกันการกดพลาด
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"คุณแน่ใจหรือไม่ว่าต้องการลบบริการ '{service.Title}'?");
+
+        if (confirmed)
+        {
+            _services.Remove(service);
+
+            toastMessage = $"ลบบริการ '{service.Title}' สำเร็จแล้ว";
+            showToast = true;
+            StateHasChanged();
+
+            await Task.Delay(3000);
+            showToast = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ToggleCustomPicker()
+    {
+        isShowCustomPicker = !isShowCustomPicker;
+    }
+
 }

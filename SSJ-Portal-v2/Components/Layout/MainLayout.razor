@@ -1,10 +1,11 @@
 ﻿@inherits LayoutComponentBase
 @using SSJ_Portal_v2.Services
 @inject FontSizeService FontSizeService
+@inject AdminService AdminService
 @implements IDisposable
 
 <div class="min-h-screen flex flex-col @FontSizeService.GetFontSizeClass() main-wrapper relative">
-    <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
         <div class="absolute inset-0 topographic-bg"></div>
         <div class="absolute -bottom-[10%] -left-[10%] w-[500px] h-[500px] rounded-full bg-blue-400/60 blur-[100px] animate-blob"></div>
         <div class="absolute -bottom-[5%] -right-[5%] w-[400px] h-[400px] rounded-full bg-teal-400/40 blur-[80px] animate-blob animation-delay-2000"></div>
@@ -12,11 +13,19 @@
   
     <TopNavbar />
 
-    <main class="flex-grow relative z-10 bg-transparent">
+    <main class="flex-grow relative bg-transparent">
         <article class="bg-transparent">
             @Body
         </article>
     </main>
+
+    <div class="fixed bottom-8 right-8 z-[100]">
+        <button @onclick="AdminService.ToggleManagementMode" 
+                title="สลับโหมดจัดการ"
+                class="w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 active:scale-90 @(AdminService.IsManagementMode ? "bg-amber-500 ring-4 ring-amber-200" : "bg-slate-700 hover:bg-slate-600")">
+            <i class="fa-solid @(AdminService.IsManagementMode ? "fa-user-gear" : "fa-user-shield") text-white text-xl"></i>
+        </button>
+    </div>
 
     <footer
         class="py-6 text-center text-slate-400 border-t border-slate-200 bg-white/80 backdrop-blur-md relative z-10">
@@ -27,13 +36,17 @@
 @code {
     protected override void OnInitialized()
     {
-        // ติดตามการเปลี่ยนแปลง เมื่อมีการเปลี่ยนขนาด ให้ Refresh หน้าจอ Layout
+        // 1. ติดตามเรื่องขนาดตัวอักษร
         FontSizeService.OnSizeChanged += StateHasChanged;
+
+        // 2. ติดตามเรื่องโหมดจัดการ (เพิ่มเข้าไป)
+        AdminService.OnModeChanged += StateHasChanged;
     }
 
     public void Dispose()
     {
-        // คืนหน่วยความจำเมื่อ Component ถูกทำลาย
+        // ยกเลิกการติดตามทั้งคู่เพื่อคืน Memory (Prevent Memory Leak)
         FontSizeService.OnSizeChanged -= StateHasChanged;
+        AdminService.OnModeChanged -= StateHasChanged;
     }
 }
